@@ -1,19 +1,25 @@
-const fs = require('node:fs')
+const fs = require('node:fs/promises')
 
 // Ejercicio 2
-async function writeFile (filePath, data, callback) {
-  fs.mkdir(filePath, { recursive: true }, (err) => {
-    if (err) throw err
+async function writeFile(filePath, data, callback) {
+  try {
+    await fs.mkdir(filePath, { recursive: true })
+  } catch (err) {
+    callback(err)
+    return
+  }
 
-    fs.writeFile(filePath + '.txt', data, (err) => {
-      if (err) throw err
-      callback()
-    })
-  })
+  try {
+    await fs.writeFile(filePath + '.txt', data)
+    callback()
+  } catch (err) {
+    callback(err)
+    return
+  }
 }
 
 // Ejercicio 3
-async function readFileAndCount (word, callback) {
+async function readFileAndCount(word, callback) {
   const path = process.argv[2]
 
   if (!word) {
@@ -21,28 +27,22 @@ async function readFileAndCount (word, callback) {
     return
   }
 
-  if (!fs.existsSync(path)) {
+  if (!path) {
     callback(new Error('No se ha especificado el path del archivo'))
     return
   }
 
-  // Este o el de arriba no estan del todo bien. Falla 1 test.
-  fs.access(path, fs.constants.F_OK, (err) => {
-    if (err) {
-      callback(null, 0)
-    }
-  })
-
-  fs.readFile(path, 'utf8', (err, data) => {
-    if (err) throw err
-
+  try {
+    const data = await fs.readFile(path, 'utf8')
     const count = data
       .replace(/[\W_]/g, ' ')
       .split(' ')
       .filter((w) => w === 'node').length
 
     callback(null, count)
-  })
+  } catch (err) {
+    callback(null, 0)
+  }
 }
 
 module.exports = {
