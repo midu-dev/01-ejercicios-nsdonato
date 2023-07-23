@@ -37,7 +37,7 @@ async function readFileAndCount(word, callback) {
     const count = data
       .replace(/[\W_]/g, ' ')
       .split(' ')
-      .filter((w) => w === 'node').length
+      .filter((w) => w === word).length
 
     callback(null, count)
   } catch (err) {
